@@ -1,0 +1,7 @@
+# Libraries
+groq       
+speechRecognition
+pyttsx3
+pyaudio
+python-dotenv
+streamlit
