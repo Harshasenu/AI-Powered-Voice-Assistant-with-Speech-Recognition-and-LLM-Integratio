@@ -67,12 +67,14 @@ def speak(text, voice_gender = "Girl"):
         if engine is None:
             return
         
+        # Choose the voice from pyttsx3
+        # engine supports many voices 
         voices = engine.getProperty('voices')
 
         if voices:
             if voice_gender == 'boy':
                 for voice in voices:
-                    if "male" in voices.name.lower():
+                    if "male" in voice.name.lower():
                         engine.setProperty("voice", voice.id)
                         break
             else:
@@ -81,15 +83,13 @@ def speak(text, voice_gender = "Girl"):
                         engine.setProperty("voice", voice.id)
                         break
 
-        engine.setProperty('rate', 150)
+        engine.setProperty('rate', 150)   # speed of speed
         engine.setProperty('volume', 0.8)
         engine.say(text)
         engine.runAndWait()
         engine.stop()
     except Exception as e:
-        st.error("TTs Error: {e}")
-
-
+        st.error("TTS Error: {e}")
     
 def get_ai_response(messages):
     try:
@@ -106,7 +106,7 @@ def get_ai_response(messages):
 
 
 def main():
-    st.title("Baby SIRI Voice Assistant")
+    st.title("AI Voice Assistant")
     st.markdown("---")
 
     # Initalizing chat
@@ -150,12 +150,28 @@ def main():
 
                     st.rerun()
                 
-                    st.markdown("---")
+        st.markdown("---")
 
-        if st.button("Clear Chat", use_container_width=True):
+        st.subheader("Test Input")
+        user_test = st.text_input("Type your message", key = "text_input")
+        if st.button("SEND", use_container_width = True) and user_test:
+            st.session_state.messages.append({"role": "user", "content": user_test})
+            st.session_state.chat_history.append({"role": "user", "content": user_test})
+
+            with st.spinner("Thinking..."):
+                ai_response = get_ai_response(st.session_state.chat_history)
+                st.session_state.messages.append({"role": "assistant", "content": ai_response})
+                st.session_state.chat_history.append({"role": "assistant", "content": ai_response})
+
+            if tts_enabled:
+                speak(ai_response, voice_gender)
+            
+            st.rerun()
+
+        if st.button("Clear the Chat", use_container_width=True):
             st.session_state.messages = []
             st.session_state.chat_history = [
-                {"role": "system", "content": "You are a helpful voice assistant. Reply just one line"}
+            {"role": "system", "content": "You are a helpful voice assistant. Reply just one line"}
             ]
             st.success("Chat history cleared!")
             st.rerun()
@@ -170,6 +186,11 @@ def main():
             with st.chat_message("assistant"):
                 st.write(message["content"])
 
+    # Starting Welcome message
+    if not st.session_state.messages:
+        st.info("Welcome to CHAT Assistant")
+
+    # Copyright
     st.markdown("---")
     st.markdown(
         """
